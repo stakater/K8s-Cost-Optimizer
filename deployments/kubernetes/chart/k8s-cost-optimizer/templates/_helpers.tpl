@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 
-{{- define "k8s-cost-optimizer-name" -}}
+{{- define "k8scostoptimizer-name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" | lower -}}
 {{- end -}}
 
@@ -11,7 +11,7 @@ Expand the name of the chart.
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "k8s-cost-optimizer-fullname" -}}
+{{- define "k8scostoptimizer-fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -20,8 +20,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 
-{{- define "k8s-cost-optimizer-labels.chart" -}}
-app: {{ template "k8s-cost-optimizer-fullname" . }}
+{{- define "k8scostoptimizer-labels.chart" -}}
+app: {{ template "k8scostoptimizer-fullname" . }}
 chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 release: {{ .Release.Name | quote }}
 heritage: {{ .Release.Service | quote }}
@@ -31,18 +31,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "k8s-cost-optimizer-serviceAccountName" -}}
-{{- if .Values.k8s-cost-optimizer.serviceAccount.create -}}
-    {{ default (include "k8s-cost-optimizer-fullname" .) .Values.k8s-cost-optimizer.serviceAccount.name }}
+{{- define "k8scostoptimizer-serviceAccountName" -}}
+{{- if .Values.k8scostoptimizer.serviceAccount.create -}}
+    {{ default (include "k8scostoptimizer-fullname" .) .Values.k8scostoptimizer.serviceAccount.name }}
 {{- else -}}
-    {{ default "default" .Values.k8s-cost-optimizer.serviceAccount.name }}
+    {{ default "default" .Values.k8scostoptimizer.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Create the annotations to support helm3
 */}}
-{{- define "k8s-cost-optimizer-helm3.annotations" -}}
+{{- define "k8scostoptimizer-helm3.annotations" -}}
 meta.helm.sh/release-namespace: {{ .Release.Namespace | quote }}
 meta.helm.sh/release-name: {{ .Release.Name | quote }}
 {{- end -}}

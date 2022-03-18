@@ -1,4 +1,4 @@
-{{- if and .Values.k8s-cost-optimizer.watchGlobally (.Values.k8s-cost-optimizer.rbac.enabled) }}
+{{- if and .Values.k8scostoptimizer.watchGlobally (.Values.k8scostoptimizer.rbac.enabled) }}
 {{- if  (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
 apiVersion: rbac.authorization.k8s.io/v1
 {{ else }}
@@ -7,23 +7,23 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   annotations:
-{{ include "k8s-cost-optimizer-helm3.annotations" . | indent 4 }}
+{{ include "k8scostoptimizer-helm3.annotations" . | indent 4 }}
   labels:
-{{ include "k8s-cost-optimizer-labels.chart" . | indent 4 }}
-{{- if .Values.k8s-cost-optimizer.rbac.labels }}
-{{ toYaml .Values.k8s-cost-optimizer.rbac.labels | indent 4 }}
+{{ include "k8scostoptimizer-labels.chart" . | indent 4 }}
+{{- if .Values.k8scostoptimizer.rbac.labels }}
+{{ toYaml .Values.k8scostoptimizer.rbac.labels | indent 4 }}
 {{- end }}
-{{- if .Values.k8s-cost-optimizer.matchLabels }}
-{{ toYaml .Values.k8s-cost-optimizer.matchLabels | indent 4 }}
+{{- if .Values.k8scostoptimizer.matchLabels }}
+{{ toYaml .Values.k8scostoptimizer.matchLabels | indent 4 }}
 {{- end }}
-  name: {{ template "k8s-cost-optimizer-fullname" . }}-role-binding
+  name: {{ template "k8scostoptimizer-fullname" . }}-role-binding
   namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "k8s-cost-optimizer-fullname" . }}-role
+  name: {{ template "k8scostoptimizer-fullname" . }}-role
 subjects:
   - kind: ServiceAccount
-    name: {{ template "k8s-cost-optimizer-serviceAccountName" . }}
+    name: {{ template "k8scostoptimizer-serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end }}

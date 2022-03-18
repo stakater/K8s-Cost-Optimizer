@@ -8,7 +8,7 @@ global:
 kubernetes:
   host: https://kubernetes.default
 
-k8s-cost-optimizer:
+k8scostoptimizer:
   cronSchedule: ""
   config:
     includeNamespaces: []
@@ -68,7 +68,7 @@ k8s-cost-optimizer:
       group: com.stakater.platform
       version: v0.0.0
     image:
-      name: stakater/k8s-cost-optimizer
+      name: stakater/k8scostoptimizer
       tag: v0.0.0
       pullPolicy: IfNotPresent
 
@@ -98,7 +98,7 @@ k8s-cost-optimizer:
     # The name of the ServiceAccount to use.
     # If not set and create is true, a name is generated using the fullname template
     name:
-  # Optional flags to pass to the k8s-cost-optimizer entrypoint
+  # Optional flags to pass to the k8scostoptimizer entrypoint
   # Example:
   #   custom_annotations:
   #     configmap: "my.company.com/configmap"
