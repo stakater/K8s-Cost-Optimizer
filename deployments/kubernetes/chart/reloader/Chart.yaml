@@ -1,0 +1,19 @@
+# Generated from deployments/kubernetes/templates/chart/Chart.yaml.tmpl
+
+apiVersion: v1
+name: k8s-cost-optimizer
+description: K8s-cost-optimizer chart that runs on kubernetes
+version: v0.0.0
+appVersion: v0.0.0
+keywords:
+  - K8s-cost-optimizer
+  - kubernetes
+home: https://github.com/stakater/k8s-cost-optimizer
+sources:
+  - https://github.com/stakater/k8s-cost-optimizer
+# icon: ""
+maintainers:
+  - name: Stakater
+    email: hello@stakater.com
+  - name: talha0324
+    email: talha.irfan@stakater.com

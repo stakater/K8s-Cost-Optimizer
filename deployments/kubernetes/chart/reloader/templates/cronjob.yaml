@@ -1,0 +1,60 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  annotations:
+{{ include "k8s-cost-optimizer-helm3.annotations" . | indent 4 }}
+{{- if .Values.k8s-cost-optimizer.cronjob.annotations }}
+{{ toYaml .Values.k8s-cost-optimizer.cronjob.annotations | indent 4 }}
+{{- end }}
+  labels:
+{{ include "k8s-cost-optimizer-labels.chart" . | indent 4 }}
+{{- if .Values.k8s-cost-optimizer.cronjob.labels }}
+{{ toYaml .Values.k8s-cost-optimizer.cronjob.labels | indent 4 }}
+{{- end }}
+{{- if .Values.k8s-cost-optimizer.matchLabels }}
+{{ toYaml .Values.k8s-cost-optimizer.matchLabels | indent 4 }}
+{{- end }}
+  name: {{ template "k8s-cost-optimizer-fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: "{{ .Values.k8s-cost-optimizer.cronSchedule }}"
+  startingDeadlineSeconds: 200
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+{{- if .Values.k8s-cost-optimizer.cronjob.pod.annotations }}
+          annotations:
+{{ toYaml .Values.k8s-cost-optimizer.cronjob.pod.annotations | indent 12 }}
+{{- end }}
+          labels:
+{{ include "k8s-cost-optimizer-labels.chart" . | indent 12 }}
+{{- if .Values.k8s-cost-optimizer.cronjob.labels }}
+{{ toYaml .Values.k8s-cost-optimizer.cronjob.labels | indent 12 }}
+{{- end }}
+{{- if .Values.k8s-cost-optimizer.matchLabels }}
+{{ toYaml .Values.k8s-cost-optimizer.matchLabels | indent 12 }}
+{{- end }}
+        spec:
+          containers:
+            - name: {{ template "k8s-cost-optimizer-fullname" . }}
+              image: "{{ .Values.k8s-cost-optimizer.cronjob.image.name }}:{{ .Values.k8s-cost-optimizer.cronjob.image.tag }}"
+              imagePullPolicy: {{ .Values.k8s-cost-optimizer.cronjob.image.pullPolicy }}
+{{- if .Values.k8s-cost-optimizer.cronjob.resources }}
+              resources:
+{{ toYaml .Values.k8s-cost-optimizer.cronjob.resources | indent 16 }}
+{{- end }}
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+{{- if .Values.k8s-cost-optimizer.cronjob.nodeSelector }}
+          nodeSelector:
+{{ toYaml .Values.k8s-cost-optimizer.cronjob.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.k8s-cost-optimizer.cronjob.securityContext }}
+          securityContext: {{ toYaml .Values.k8s-cost-optimizer.cronjob.securityContext | nindent 8 }}
+{{- end }}
+          serviceAccountName: {{ template "k8s-cost-optimizer-serviceAccountName" . }}
+  successfulJobsHistoryLimit: {{ .Values.k8s-cost-optimizer.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.k8s-cost-optimizer.cronjob.failedJobsHistoryLimit }}

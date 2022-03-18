@@ -1,0 +1,48 @@
+{{- if and .Values.k8s-cost-optimizer.watchGlobally (.Values.k8s-cost-optimizer.rbac.enabled) }}
+{{- if  (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+apiVersion: rbac.authorization.k8s.io/v1
+{{ else }}
+apiVersion: rbac.authorization.k8s.io/v1beta1
+{{- end }}
+kind: ClusterRole
+metadata:
+  annotations:
+{{ include "k8s-cost-optimizer-helm3.annotations" . | indent 4 }}
+  labels:
+{{ include "k8s-cost-optimizer-labels.chart" . | indent 4 }}
+{{- if .Values.k8s-cost-optimizer.rbac.labels }}
+{{ toYaml .Values.k8s-cost-optimizer.rbac.labels | indent 4 }}
+{{- end }}
+{{- if .Values.k8s-cost-optimizer.matchLabels }}
+{{ toYaml .Values.k8s-cost-optimizer.matchLabels | indent 4 }}
+{{- end }}
+  name: {{ template "k8s-cost-optimizer-fullname" . }}-role
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - get
+      - update
+      - delete
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - statefulsets
+    verbs:
+      - list
+      - get
+      - update
+      - patch
+{{- end }}
