@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	"github.com/sirupsen/logrus"
-	driver "github.com/stakater/k8s-cost-optimizer/pkg"
+	driver "github.com/stakater/k8s-cost-optimizer/pkg/driver"
 )
 
 func main() {
