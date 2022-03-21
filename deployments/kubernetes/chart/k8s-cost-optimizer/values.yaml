@@ -10,6 +10,11 @@ kubernetes:
 
 k8scostoptimizer:
   cronSchedule: ""
+
+  dryrun: false
+  patchResources: true
+  nodeAffinityWeightTolerance: 0
+
   config:
     includeNamespaces: []
       # Example:

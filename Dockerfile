@@ -1,5 +1,10 @@
 FROM golang:1.17.8 as builder
 
+ARG TARGETOS
+ARG TARGETARCH
+ARG GOPROXY
+ARG GOPRIVATE
+
 WORKDIR /build
 
 COPY go.mod ./
@@ -8,12 +13,20 @@ RUN go mod download
 
 COPY main.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+RUN CGO_ENABLED=0 \
+    GOOS=${TARGETOS} \
+    GOARCH=${TARGETARCH} \
+    GOPROXY=${GOPROXY} \
+    GOPRIVATE=${GOPRIVATE} \
+    GO111MODULE=on \
+    go build -mod=mod -a -o k8s-cost-optimizer main.go
+
+# RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
 FROM scratch
 
-USER 1000
+USER 65532:65532
 
-COPY --from=builder /build/kube-better-node /bin/kube-better-node
+COPY --from=builder /build/k8s-cost-optimizer /bin/k8s-cost-optimizer
 
-ENTRYPOINT ["/bin/kube-better-node"]
+ENTRYPOINT ["/bin/k8s-cost-optimizer"]
