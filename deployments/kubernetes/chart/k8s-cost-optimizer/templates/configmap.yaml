@@ -6,11 +6,11 @@ metadata:
 data:
   config.yaml: |-
     targetNamespaces:
-{{ toYaml .Values.k8scostoptimizer.rbac.labels | indent 6 }}
+{{ toYaml .Values.k8scostoptimizer.config.includeNamespaces | indent 4 }}
     resourcesToIgnore:
       deployments:
-{{ toYaml .Values.k8scostoptimizer.rbac.labels | indent 8 }}
+{{ toYaml .Values.k8scostoptimizer.config.excludeResources.deployments | indent 6 }}
       statefuleSets:
-{{ toYaml .Values.k8scostoptimizer.rbac.labels | indent 8 }}
+{{ toYaml .Values.k8scostoptimizer.config.excludeResources.statefulsets | indent 6 }}
     specPatch:
-{{ toYaml .Values.k8scostoptimizer.rbac.labels | indent 6 }}
+{{ toYaml .Values.k8scostoptimizer.config.specPatch | indent 6 }}
