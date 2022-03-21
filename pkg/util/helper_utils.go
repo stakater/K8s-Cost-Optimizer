@@ -5,9 +5,11 @@ import (
 	"fmt"
 )
 
-func AsSha256(o interface{}) string {
+func AsSha256(o interface{}) (string, error) {
 	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("%v", o)))
-
-	return fmt.Sprintf("%x", h.Sum(nil))
+	_, err := h.Write([]byte(fmt.Sprintf("%v", o)))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
