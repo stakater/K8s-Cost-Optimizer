@@ -85,7 +85,7 @@ k8scostoptimizer:
     pod:
       annotations: {}
     priorityClassName: ""
-
+  watchGlobally: true
   rbac:
     enabled: true
     labels: {}
