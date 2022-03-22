@@ -16,7 +16,7 @@ build:
 helm-lint:
 	if [ -d charts ]; then helm lint charts/kubehealth; fi
 
-bump-chart: 
+bump-chart-version: 
 	sed -i "s/^version:.*/version: v$(VERSION)/" deployments/kubernetes/chart/k8s-cost-optimizer/Chart.yaml
 	sed -i "s/^appVersion:.*/appVersion: v$(VERSION)/" deployments/kubernetes/chart/k8s-cost-optimizer/Chart.yaml
 	sed -i "s/tag:.*/tag: v$(VERSION)/" deployments/kubernetes/chart/k8s-cost-optimizer/values.yaml
