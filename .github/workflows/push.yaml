@@ -38,6 +38,7 @@ jobs:
         with:
           version: v1.33
           only-new-issues: false
+          args: --timeout 10m
 
       - name: Generate Tag
         id: generate_tag
