@@ -5,13 +5,13 @@ kind: CronJob
 metadata:
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-86e7b56"
+    chart: "k8scostoptimizer-v0.0.1-3d08b64"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"
     group: com.stakater.platform
     provider: stakater
-    version: v0.0.1-86e7b56
+    version: v0.0.1-3d08b64
   name: k8s-cost-optimizer-k8scostoptimizer
   namespace: default
 spec:
@@ -24,30 +24,30 @@ spec:
         metadata:
           labels:
             app: k8s-cost-optimizer-k8scostoptimizer
-            chart: "k8scostoptimizer-v0.0.1-86e7b56"
+            chart: "k8scostoptimizer-v0.0.1-3d08b64"
             release: "k8s-cost-optimizer"
             heritage: "Helm"
             app.kubernetes.io/managed-by: "Helm"
             group: com.stakater.platform
             provider: stakater
-            version: v0.0.1-86e7b56
+            version: v0.0.1-3d08b64
         spec:
           containers:
             - name: k8s-cost-optimizer-k8scostoptimizer
-              image: "stakater/k8scostoptimizer:v0.0.1-86e7b56"
+              image: "stakater/k8scostoptimizer:v0.0.1-3d08b64"
               imagePullPolicy: IfNotPresent
               args:
               - "--config-file-path=/app/config.yaml"
               - "--patch=true"
               volumeMounts:
-              - name: configmap-config
+              - name: config
                 mountPath: /app
                 subPath: config.yaml
           restartPolicy: Never
           volumes:
-          - name: k8s-cost-optimizer-k8scostoptimizer-config
+          - name: config
             configMap:
-              name: config
+              name: k8s-cost-optimizer-k8scostoptimizer-config
           terminationGracePeriodSeconds: 30
           dnsPolicy: ClusterFirst
           securityContext: 
