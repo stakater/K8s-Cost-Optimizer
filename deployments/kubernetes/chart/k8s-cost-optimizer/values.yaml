@@ -1,0 +1,111 @@
+# Generated from deployments/kubernetes/templates/chart/values.yaml.tmpl
+global:
+  ## Reference to one or more secrets to be used when pulling images
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  imagePullSecrets: []
+
+kubernetes:
+  host: https://kubernetes.default
+
+k8scostoptimizer:
+  cronSchedule: ""
+
+  dryrun: false
+  patchResources: true
+  nodeAffinityWeightTolerance: 0
+
+  config:
+    includeNamespaces: []
+      # Example:
+    # - namespace-one
+    # - namespace-two
+    excludeResources:
+      deployments: []
+      # Example:
+      # - name: dep-one
+      #   namespace: namespace-one
+      statefulsets: []
+      # Example:
+      # - name: sset-one
+      #   namespace: namespace-two
+    specPatch: {}
+      # Example:
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: "node-role.kubernetes.io/infra-worker"
+      #           operator: "Exists"
+  cronjob:
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 2
+    nodeSelector:
+    # cloud.google.com/gke-nodepool: default-pool
+
+    # An affinity stanza to be applied to the CronJob.
+    # Example:
+    #   affinity:
+    #     nodeAffinity:
+    #       requiredDuringSchedulingIgnoredDuringExecution:
+    #         nodeSelectorTerms:
+    #         - matchExpressions:
+    #           - key: "node-role.kubernetes.io/infra-worker"
+    #             operator: "Exists"
+    affinity: {}
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+
+    # A list of tolerations to be applied to the CronJob.
+    # Example:
+    #   tolerations:
+    #   - key: "node-role.kubernetes.io/infra-worker"
+    #     operator: "Exists"
+    #     effect: "NoSchedule"
+    tolerations: []
+
+    annotations: {}
+    labels:
+      provider: stakater
+      group: com.stakater.platform
+      version: v0.0.0
+    image:
+      name: stakater/k8scostoptimizer
+      tag: v0.0.0
+      pullPolicy: IfNotPresent
+
+    # Specify resource requests/limits for the CronJob.
+    # Example:
+    # resources:
+    #   limits:
+    #     cpu: "100m"
+    #     memory: "512Mi"
+    #   requests:
+    #     cpu: "10m"
+    #     memory: "128Mi"
+    resources: {}
+    pod:
+      annotations: {}
+    priorityClassName: ""
+  watchGlobally: true
+  rbac:
+    enabled: true
+    labels: {}
+  # Service account config for the agent pods
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    labels: {}
+    annotations: {}
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name:
+  # Optional flags to pass to the k8scostoptimizer entrypoint
+  # Example:
+  #   custom_annotations:
+  #     configmap: "my.company.com/configmap"
+  #     secret: "my.company.com/secret"
+  custom_annotations: {}

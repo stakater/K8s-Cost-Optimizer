@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "k8scostoptimizer-fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |-
+    targetNamespaces:
+{{ toYaml .Values.k8scostoptimizer.config.includeNamespaces | indent 4 }}
+    resourcesToIgnore:
+      deployments:
+{{ toYaml .Values.k8scostoptimizer.config.excludeResources.deployments | indent 6 }}
+      statefuleSets:
+{{ toYaml .Values.k8scostoptimizer.config.excludeResources.statefulsets | indent 6 }}
+    specPatch:
+{{ toYaml .Values.k8scostoptimizer.config.specPatch | indent 6 }}

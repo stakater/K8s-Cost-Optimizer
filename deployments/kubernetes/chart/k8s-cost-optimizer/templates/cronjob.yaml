@@ -1,0 +1,79 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+{{- if .Values.k8scostoptimizer.cronjob.annotations }}
+  annotations:
+{{ include "k8scostoptimizer-helm3.annotations" . | indent 4 }}
+{{ toYaml .Values.k8scostoptimizer.cronjob.annotations | indent 4 }}
+{{- end }}
+  labels:
+{{ include "k8scostoptimizer-labels.chart" . | indent 4 }}
+{{- if .Values.k8scostoptimizer.cronjob.labels }}
+{{ toYaml .Values.k8scostoptimizer.cronjob.labels | indent 4 }}
+{{- end }}
+{{- if .Values.k8scostoptimizer.matchLabels }}
+{{ toYaml .Values.k8scostoptimizer.matchLabels | indent 4 }}
+{{- end }}
+  name: {{ template "k8scostoptimizer-fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: "{{ .Values.k8scostoptimizer.cronSchedule }}"
+  startingDeadlineSeconds: 200
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+{{- if .Values.k8scostoptimizer.cronjob.pod.annotations }}
+          annotations:
+{{ toYaml .Values.k8scostoptimizer.cronjob.pod.annotations | indent 12 }}
+{{- end }}
+          labels:
+{{ include "k8scostoptimizer-labels.chart" . | indent 12 }}
+{{- if .Values.k8scostoptimizer.cronjob.labels }}
+{{ toYaml .Values.k8scostoptimizer.cronjob.labels | indent 12 }}
+{{- end }}
+{{- if .Values.k8scostoptimizer.matchLabels }}
+{{ toYaml .Values.k8scostoptimizer.matchLabels | indent 12 }}
+{{- end }}
+        spec:
+          containers:
+            - name: {{ template "k8scostoptimizer-fullname" . }}
+              image: "{{ .Values.k8scostoptimizer.cronjob.image.name }}:{{ .Values.k8scostoptimizer.cronjob.image.tag }}"
+              imagePullPolicy: {{ .Values.k8scostoptimizer.cronjob.image.pullPolicy }}
+{{- if .Values.k8scostoptimizer.cronjob.resources }}
+              resources:
+{{ toYaml .Values.k8scostoptimizer.cronjob.resources | indent 16 }}
+{{- end }}
+              args:
+              - "--config-file-path=/app/config.yaml"
+              {{- if .Values.k8scostoptimizer.dryrun }}
+              - "--dry-run={{ .Values.k8scostoptimizer.dryrun }}"
+              {{- end }}
+              {{- if .Values.k8scostoptimizer.patchResources }}
+              - "--patch={{ .Values.k8scostoptimizer.patchResources }}"
+              {{- end }}
+              {{- if .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}
+              - "--tolerance={{ .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}"
+              {{- end }}
+              volumeMounts:
+              - name: configmap-config
+                mountPath: /app
+                subPath: config.yaml
+          restartPolicy: Never
+          volumes:
+          - name: {{ template "k8scostoptimizer-fullname" . }}-config
+            configMap:
+              name: config
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+{{- if .Values.k8scostoptimizer.cronjob.nodeSelector }}
+          nodeSelector:
+{{ toYaml .Values.k8scostoptimizer.cronjob.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.k8scostoptimizer.cronjob.securityContext }}
+          securityContext: {{ toYaml .Values.k8scostoptimizer.cronjob.securityContext | nindent 12 }}
+{{- end }}
+          serviceAccountName: {{ template "k8scostoptimizer-serviceAccountName" . }}
+  successfulJobsHistoryLimit: {{ .Values.k8scostoptimizer.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.k8scostoptimizer.cronjob.failedJobsHistoryLimit }}

@@ -1,0 +1,19 @@
+# Generated from deployments/kubernetes/templates/chart/Chart.yaml.tmpl
+
+apiVersion: v1
+name: k8scostoptimizer
+description: k8scostoptimizer chart that runs on kubernetes
+version: v0.0.0
+appVersion: v0.0.0
+keywords:
+  - k8scostoptimizer
+  - kubernetes
+home: https://github.com/stakater/k8scostoptimizer
+sources:
+  - https://github.com/stakater/k8scostoptimizer
+# icon: ""
+maintainers:
+  - name: Stakater
+    email: hello@stakater.com
+  - name: talha0324
+    email: talha.irfan@stakater.com
