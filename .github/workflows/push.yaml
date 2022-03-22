@@ -105,6 +105,7 @@ jobs:
         run: |
           helm template k8s-cost-optimizer deployments/kubernetes/chart/k8s-cost-optimizer/ > deployments/kubernetes/k8s-cost-optimizer.yaml
           helm template k8s-cost-optimizer deployments/kubernetes/chart/k8s-cost-optimizer/  --output-dir deployments/kubernetes/manifests/ && mv deployments/kubernetes/manifests/k8s-cost-optimizer/templates/* deployments/kubernetes/manifests/ && rm -r deployments/kubernetes/manifests/k8s-cost-optimizer
+
       # Publish helm chart
       - name: Publish Helm chart
         uses: stefanprodan/helm-gh-pages@master
