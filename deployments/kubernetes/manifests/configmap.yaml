@@ -1,0 +1,18 @@
+---
+# Source: k8scostoptimizer/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-cost-optimizer-k8scostoptimizer-config
+  namespace: default
+data:
+  config.yaml: |-
+    targetNamespaces:
+    []
+    resourcesToIgnore:
+      deployments:
+      []
+      statefuleSets:
+      []
+    specPatch:
+      {}

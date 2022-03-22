@@ -1,0 +1,44 @@
+---
+# Source: k8scostoptimizer/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+
+kind: ClusterRole
+metadata:
+  annotations:
+    meta.helm.sh/release-namespace: "default"
+    meta.helm.sh/release-name: "k8s-cost-optimizer"
+  labels:
+    app: k8s-cost-optimizer-k8scostoptimizer
+    chart: "k8scostoptimizer-v0.0.1-86e7b56"
+    release: "k8s-cost-optimizer"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  name: k8s-cost-optimizer-k8scostoptimizer-role
+  namespace: default
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - get
+      - update
+      - delete
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - statefulsets
+    verbs:
+      - list
+      - get
+      - update
+      - patch

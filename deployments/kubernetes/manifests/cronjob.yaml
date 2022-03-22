@@ -1,0 +1,58 @@
+---
+# Source: k8scostoptimizer/templates/cronjob.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  labels:
+    app: k8s-cost-optimizer-k8scostoptimizer
+    chart: "k8scostoptimizer-v0.0.1-86e7b56"
+    release: "k8s-cost-optimizer"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+    group: com.stakater.platform
+    provider: stakater
+    version: v0.0.1-86e7b56
+  name: k8s-cost-optimizer-k8scostoptimizer
+  namespace: default
+spec:
+  schedule: ""
+  startingDeadlineSeconds: 200
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: k8s-cost-optimizer-k8scostoptimizer
+            chart: "k8scostoptimizer-v0.0.1-86e7b56"
+            release: "k8s-cost-optimizer"
+            heritage: "Helm"
+            app.kubernetes.io/managed-by: "Helm"
+            group: com.stakater.platform
+            provider: stakater
+            version: v0.0.1-86e7b56
+        spec:
+          containers:
+            - name: k8s-cost-optimizer-k8scostoptimizer
+              image: "stakater/k8scostoptimizer:v0.0.1-86e7b56"
+              imagePullPolicy: IfNotPresent
+              args:
+              - "--config-file-path=/app/config.yaml"
+              - "--patch=true"
+              volumeMounts:
+              - name: configmap-config
+                mountPath: /app
+                subPath: config.yaml
+          restartPolicy: Never
+          volumes:
+          - name: k8s-cost-optimizer-k8scostoptimizer-config
+            configMap:
+              name: config
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: 
+            runAsNonRoot: true
+            runAsUser: 65534
+          serviceAccountName: k8s-cost-optimizer-k8scostoptimizer
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
