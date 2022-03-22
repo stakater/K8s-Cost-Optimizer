@@ -57,14 +57,14 @@ spec:
               - "--tolerance={{ .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}"
               {{- end }}
               volumeMounts:
-              - name: configmap-config
+              - name: config
                 mountPath: /app
                 subPath: config.yaml
           restartPolicy: Never
           volumes:
-          - name: {{ template "k8scostoptimizer-fullname" . }}-config
+          - name: config
             configMap:
-              name: config
+              name: {{ template "k8scostoptimizer-fullname" . }}-config
           terminationGracePeriodSeconds: 30
           dnsPolicy: ClusterFirst
 {{- if .Values.k8scostoptimizer.cronjob.nodeSelector }}
