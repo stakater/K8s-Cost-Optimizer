@@ -56,6 +56,9 @@ spec:
               {{- if .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}
               - "--tolerance={{ .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}"
               {{- end }}
+            {{- with .Values.k8scostoptimizer.cronjob.containerSecurityContext }}
+              securityContext: {{ toYaml . | nindent 10 }}
+            {{- end }}
               volumeMounts:
               - name: config
                 mountPath: /app

@@ -54,7 +54,7 @@ k8scostoptimizer:
     #           - key: "node-role.kubernetes.io/infra-worker"
     #             operator: "Exists"
     affinity: {}
-
+    containerSecurityContext: {}
     securityContext:
       runAsNonRoot: true
       runAsUser: 65534
