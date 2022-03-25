@@ -9,7 +9,7 @@ kubernetes:
   host: https://kubernetes.default
 
 k8scostoptimizer:
-  cronSchedule: ""
+  cronSchedule: "*/2 * * * *"
 
   dryrun: false
   patchResources: true
