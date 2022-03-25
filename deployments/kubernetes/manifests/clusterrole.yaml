@@ -9,7 +9,7 @@ metadata:
     meta.helm.sh/release-name: "k8s-cost-optimizer"
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-91404c2"
+    chart: "k8scostoptimizer-v0.0.1-25400a8"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"

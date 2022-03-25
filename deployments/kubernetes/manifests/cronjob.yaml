@@ -5,13 +5,13 @@ kind: CronJob
 metadata:
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-91404c2"
+    chart: "k8scostoptimizer-v0.0.1-25400a8"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"
     group: com.stakater.platform
     provider: stakater
-    version: v0.0.1-91404c2
+    version: v0.0.1-25400a8
   name: k8s-cost-optimizer-k8scostoptimizer
   namespace: default
 spec:
@@ -24,17 +24,17 @@ spec:
         metadata:
           labels:
             app: k8s-cost-optimizer-k8scostoptimizer
-            chart: "k8scostoptimizer-v0.0.1-91404c2"
+            chart: "k8scostoptimizer-v0.0.1-25400a8"
             release: "k8s-cost-optimizer"
             heritage: "Helm"
             app.kubernetes.io/managed-by: "Helm"
             group: com.stakater.platform
             provider: stakater
-            version: v0.0.1-91404c2
+            version: v0.0.1-25400a8
         spec:
           containers:
             - name: k8s-cost-optimizer-k8scostoptimizer
-              image: "stakater/k8scostoptimizer:v0.0.1-91404c2"
+              image: "stakater/k8scostoptimizer:v0.0.1-25400a8"
               imagePullPolicy: IfNotPresent
               args:
               - "--config-file-path=/app/config.yaml"
