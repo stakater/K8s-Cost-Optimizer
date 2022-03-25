@@ -8,7 +8,7 @@ metadata:
     meta.helm.sh/release-name: "k8s-cost-optimizer"
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-3d08b64"
+    chart: "k8scostoptimizer-v0.0.1-91404c2"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"
@@ -42,7 +42,7 @@ metadata:
     meta.helm.sh/release-name: "k8s-cost-optimizer"
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-3d08b64"
+    chart: "k8scostoptimizer-v0.0.1-91404c2"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"
@@ -86,7 +86,7 @@ metadata:
     meta.helm.sh/release-name: "k8s-cost-optimizer"
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-3d08b64"
+    chart: "k8scostoptimizer-v0.0.1-91404c2"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"
@@ -102,22 +102,22 @@ subjects:
     namespace: default
 ---
 # Source: k8scostoptimizer/templates/cronjob.yaml
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   labels:
     app: k8s-cost-optimizer-k8scostoptimizer
-    chart: "k8scostoptimizer-v0.0.1-3d08b64"
+    chart: "k8scostoptimizer-v0.0.1-91404c2"
     release: "k8s-cost-optimizer"
     heritage: "Helm"
     app.kubernetes.io/managed-by: "Helm"
     group: com.stakater.platform
     provider: stakater
-    version: v0.0.1-3d08b64
+    version: v0.0.1-91404c2
   name: k8s-cost-optimizer-k8scostoptimizer
   namespace: default
 spec:
-  schedule: ""
+  schedule: "*/2 * * * *"
   startingDeadlineSeconds: 200
   concurrencyPolicy: Forbid
   jobTemplate:
@@ -126,17 +126,17 @@ spec:
         metadata:
           labels:
             app: k8s-cost-optimizer-k8scostoptimizer
-            chart: "k8scostoptimizer-v0.0.1-3d08b64"
+            chart: "k8scostoptimizer-v0.0.1-91404c2"
             release: "k8s-cost-optimizer"
             heritage: "Helm"
             app.kubernetes.io/managed-by: "Helm"
             group: com.stakater.platform
             provider: stakater
-            version: v0.0.1-3d08b64
+            version: v0.0.1-91404c2
         spec:
           containers:
             - name: k8s-cost-optimizer-k8scostoptimizer
-              image: "stakater/k8scostoptimizer:v0.0.1-3d08b64"
+              image: "stakater/k8scostoptimizer:v0.0.1-91404c2"
               imagePullPolicy: IfNotPresent
               args:
               - "--config-file-path=/app/config.yaml"
