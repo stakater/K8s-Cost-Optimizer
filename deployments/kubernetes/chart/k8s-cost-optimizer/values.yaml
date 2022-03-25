@@ -41,8 +41,7 @@ k8scostoptimizer:
   cronjob:
     successfulJobsHistoryLimit: 1
     failedJobsHistoryLimit: 2
-    nodeSelector:
-    # cloud.google.com/gke-nodepool: default-pool
+    nodeSelector: {}
 
     # An affinity stanza to be applied to the CronJob.
     # Example:
