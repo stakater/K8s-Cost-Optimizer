@@ -56,6 +56,9 @@ spec:
               {{- if .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}
               - "--tolerance={{ .Values.k8scostoptimizer.nodeAffinityWeightTolerance }}"
               {{- end }}
+            {{- with .Values.k8scostoptimizer.cronjob.containerSecurityContext }}
+              securityContext: {{ toYaml . | nindent 16 }}
+            {{- end }}
               volumeMounts:
               - name: config
                 mountPath: /app
@@ -69,7 +72,7 @@ spec:
           dnsPolicy: ClusterFirst
 {{- if .Values.k8scostoptimizer.cronjob.nodeSelector }}
           nodeSelector:
-{{ toYaml .Values.k8scostoptimizer.cronjob.nodeSelector | indent 8 }}
+{{ toYaml .Values.k8scostoptimizer.cronjob.nodeSelector | indent 12 }}
 {{- end }}
 {{- if .Values.k8scostoptimizer.cronjob.securityContext }}
           securityContext: {{ toYaml .Values.k8scostoptimizer.cronjob.securityContext | nindent 12 }}
