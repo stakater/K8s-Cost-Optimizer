@@ -62,7 +62,6 @@ spec:
               volumeMounts:
               - name: config
                 mountPath: /app
-                subPath: config.yaml
           restartPolicy: Never
           volumes:
           - name: config
