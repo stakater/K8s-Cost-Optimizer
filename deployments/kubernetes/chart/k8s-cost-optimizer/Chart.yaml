@@ -3,8 +3,8 @@
 apiVersion: v1
 name: k8scostoptimizer
 description: k8scostoptimizer chart that runs on kubernetes
-version: v0.0.1-25400a8
-appVersion: v0.0.1-25400a8
+version: v0.0.1-03723d8
+appVersion: v0.0.1-03723d8
 keywords:
   - k8scostoptimizer
   - kubernetes
