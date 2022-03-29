@@ -8,11 +8,11 @@ metadata:
 data:
   config.yaml: |-
     targetNamespaces:
-    []
+      []
     resourcesToIgnore:
       deployments:
-      []
+        []
       statefuleSets:
-      []
+        []
     specPatch:
       {}
