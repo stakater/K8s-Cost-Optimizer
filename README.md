@@ -6,25 +6,50 @@ This tool focuses on optimizing cost of kubernetes by taking different use cases
 
 ---
 
+Problem to solve here is to save cost on kubernetes as Kubernetes is usually a multi-node environment so by catering following different scenarios, we can save cost by introducing low cost nodes in our cluster coupled with this tool.
+
 ### **1. Workload Balancing**
 
-When a project is small and there's a need to use some special Spot instance node type.
-When this instance is taken back from you by AWS, but your project can afford some performance degradation for a short period of time (untill there's a new node given), `kube-scheduler` will place it on some other node available at the moment.
-But when finally new Tesla node will join the cluster, there's nothing to schedule your project's Pod back to it.
+There are special type of nodes on some cloud providers called spot instances, spot instances are cheap but can be taken away anytime. When this instance is taken back from you by Cloud Provider, but your project can afford some performance degradation for a short period of time (untill there's a new node given), `kube-scheduler` will place it on some other node available at the moment or on a different auto-scalable node set.
 
-Here **k8s-cost-optimizer** can be usefull.
+Issue here is, when finally original node will join the cluster back, there's nothing to schedule your workload Pods back to it and they still be running on high costed nodes.
+
+Here again **k8s-cost-optimizer** can be useful.
 
 ### **2. Workload Patching**
 
-When you need to patch all workloads to be scheduled on a low cost machine. This coupled with **1st** use case can schedule all the workload on low cost node.
+When you need to patch all workloads to be scheduled on a low cost machine. This coupled with **1st** scenario can schedule all the workload on low cost node by patching them first (if not patched) to prefer to schedule on low cost node (specified via config) and then re-deploying them onto other nodes.
 
-## Installation
+## Deploying to Kubernetes
 
 ---
 
+You can deploy K8s Cost Optimizer by following methods:
+
+### Vanilla Manifests
+
+You can apply vanilla manifests by changing RELEASE-NAME placeholder provided in manifest with a proper value and apply it by running the command given below:
+
 ```bash
+kubectl apply -f https://raw.githubusercontent.com/stakater/k8s-cost-optimizer/master/deployments/kubernetes/k8s-cost-optimizer.yaml
 ```
 
+By default, K8s Cost Optimizer gets deployed in default namespace and watches changes secrets and configmaps in all namespaces.
+
+### Helm Charts
+
+Alternatively if you have configured helm on your cluster, you can add K8s Cost Optimizer to helm from our public chart repository and deploy it via helm using below mentioned commands.
+
+```bash
+helm repo add stakater https://stakater.github.io/stakater-charts
+
+helm repo update
+
+helm install stakater/k8scostoptimizer 
+```
+## How it works
+
+K8s cost optimizer deploys as `CronJob` with run at every 2nd minute by default and it uses a `configMap` and mounts it as it's config.
 ## Commandline arguments
 
 ---
@@ -49,6 +74,27 @@ Config structure for the moment is a YAML. Which should look like this.
 At the moment only `Deployment` & `StatefulSet` type is supported.
 
 Idea behind the config is to patch all the workloads in `targetNamespaces` and ignore the one's that are provided to be ignored in the config YAML.
+
+Mandatory structure for config is:
+
+```YAML
+targetNamespaces:
+  []
+resourcesToIgnore:
+  deployments:
+    []
+  statefuleSets:
+    []
+  specPatch:
+    tolerations:
+      []
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          []
+```
+
+SAMPLE:
 
 ```YAML
 targetNamespaces:
