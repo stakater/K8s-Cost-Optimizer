@@ -24,7 +24,7 @@ When you need to patch all workloads to be scheduled on a low cost machine. This
 
 ---
 
-You can deploy Reloader by following methods:
+You can deploy K8s Cost Optimizer by following methods:
 
 ### Vanilla Manifests
 
@@ -34,11 +34,11 @@ You can apply vanilla manifests by changing RELEASE-NAME placeholder provided in
 kubectl apply -f https://raw.githubusercontent.com/stakater/k8s-cost-optimizer/master/deployments/kubernetes/k8s-cost-optimizer.yaml
 ```
 
-By default, Reloader gets deployed in default namespace and watches changes secrets and configmaps in all namespaces.
+By default, K8s Cost Optimizer gets deployed in default namespace and watches changes secrets and configmaps in all namespaces.
 
 ### Helm Charts
 
-Alternatively if you have configured helm on your cluster, you can add reloader to helm from our public chart repository and deploy it via helm using below mentioned commands.
+Alternatively if you have configured helm on your cluster, you can add K8s Cost Optimizer to helm from our public chart repository and deploy it via helm using below mentioned commands.
 
 ```bash
 helm repo add stakater https://stakater.github.io/stakater-charts
@@ -47,7 +47,9 @@ helm repo update
 
 helm install stakater/k8scostoptimizer 
 ```
+## How it works
 
+K8s cost optimizer deploys as `CronJob` with run at every 2nd minute by default and it uses a `configMap` and mounts it as it's config.
 ## Commandline arguments
 
 ---
