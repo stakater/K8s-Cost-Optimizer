@@ -72,8 +72,9 @@ jobs:
           pull: true
           push: true
           build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
+          # cache-to: type=inline
+          platforms: linux/amd64 #,linux/arm,linux/arm64
           cache-to: type=inline
-          platforms: linux/amd64,linux/arm,linux/arm64
           tags: |
             ${{ env.IMAGE_REPOSITORY }}:${{ steps.generate_tag.outputs.new_tag }}
           labels: |
