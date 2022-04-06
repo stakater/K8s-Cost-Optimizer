@@ -58,6 +58,9 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 				logrus.Infof("[SKIPPED] deployment %s/%s", dep.Namespace, dep.Name)
 				continue
 			}
+			if dep.ObjectMeta.Annotations == nil {
+				dep.ObjectMeta.Annotations = make(map[string]string)
+			}
 			depPatchHash, ok := dep.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME]
 			if ok && depPatchHash == patchHash {
 				logrus.Infof("[ALREADY PATCHED-IGNORED] deployment %s/%s", dep.Namespace, dep.Name)
@@ -122,8 +125,12 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 				logrus.Infof("[SKIPPED] statefulset %s/%s", sset.Namespace, sset.Name)
 				continue
 			}
-			depPatchHash, ok := sset.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME]
-			if ok && depPatchHash == patchHash {
+
+			if sset.ObjectMeta.Annotations == nil {
+				sset.ObjectMeta.Annotations = make(map[string]string)
+			}
+			ssetPatchHash, ok := sset.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME]
+			if ok && ssetPatchHash == patchHash {
 				logrus.Infof("[ALREADY PATCHED-IGNORED] statefulset %s/%s", sset.Namespace, sset.Name)
 				continue
 			} else {
