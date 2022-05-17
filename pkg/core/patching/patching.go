@@ -16,6 +16,10 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 )
 
+func RemoveIndex(s []v1.Toleration, index int) []v1.Toleration {
+	return append(s[:index], s[index+1:]...)
+}
+
 func PatchResources(client *clientset.Clientset, configFilePath string, dryRun bool) error {
 	// Verify config
 	if _, err := os.Stat(configFilePath); errors.Is(err, os.ErrNotExist) {
@@ -37,16 +41,59 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 		logrus.Errorf("Couldn't generate hash for config, error: %v", err)
 		return err
 	}
-	// Check for patching
+	// pre prep
 	patch := patchConfig.SpecPatch
 	var toIgnoreDeployments map[string]bool = make(map[string]bool)
 	var toIgnoreStatefulSets map[string]bool = make(map[string]bool)
+	var includedNamespaces map[string]bool = make(map[string]bool)
 	for _, dep := range patchConfig.ResourcesToIgnore.Deployments {
 		toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)] = true
 	}
 	for _, sset := range patchConfig.ResourcesToIgnore.StatefulSets {
 		toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)] = true
 	}
+	for _, namespace := range patchConfig.TargetNamespaces { // this will help in less iterations in next loop
+		includedNamespaces[namespace] = true
+	}
+
+	deps, err := client.AppsV1().Deployments("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, dep := range deps.Items {
+		_, okNS := includedNamespaces[dep.Namespace] // if NS exists
+		_, okIG := toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)]
+		_, okAN := dep.Annotations[common.KCO_LABLE_KEY_NAME]
+		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
+			// remove patch
+
+			fmt.Println("remove patch")
+		}
+		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
+			// remove patch
+			fmt.Println("remove patch")
+		}
+	}
+	ssets, err := client.AppsV1().StatefulSets("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, sset := range ssets.Items {
+		_, okNS := includedNamespaces[sset.Namespace] // if NS exists
+		_, okIG := toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)]
+		_, okAN := sset.Annotations[common.KCO_LABLE_KEY_NAME]
+		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
+			// remove patch
+			fmt.Println("remove patch")
+		}
+		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
+			// remove patch
+			fmt.Println("remove patch")
+		}
+	}
+
+	// Check for patching
+
 	for _, namespace := range patchConfig.TargetNamespaces {
 		// Deployments
 		deps, err := client.AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{})
