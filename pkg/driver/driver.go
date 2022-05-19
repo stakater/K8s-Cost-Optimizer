@@ -16,7 +16,6 @@ func Drive(tolerance int, patchResources bool, configFilePath string, dryRun boo
 		logrus.Errorf("Couldn't get Kubernetes default config: %s", err)
 		return err
 	}
-
 	client, err := clientset.NewForConfig(config)
 	if err != nil {
 		return err

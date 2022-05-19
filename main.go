@@ -12,8 +12,8 @@ func main() {
 	var (
 		dryRun         = flag.Bool("dry-run", false, "Only do a dry Run (default: false)")
 		tolerance      = flag.Int("tolerance", 0, "Ignore certain weight difference (default: 0)")
-		patchResources = flag.Bool("patch", false, "Path resources according to config (default: false)")
-		configFilePath = flag.String("config-file-path", "/app/config", "Path to config file where the details of deployments needs to be read")
+		patchResources = flag.Bool("patch", true, "Path resources according to config (default: false)")
+		configFilePath = flag.String("config-file-path", "/mnt/d/stakater/config.yaml", "Path to config file where the details of deployments needs to be read")
 	)
 	flag.Parse()
 

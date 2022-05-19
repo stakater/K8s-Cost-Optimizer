@@ -41,6 +41,30 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 		logrus.Errorf("Couldn't generate hash for config, error: %v", err)
 		return err
 	}
+	ns, exist := os.LookupEnv(common.NAMESPACE_ENV_KEY_NAME)
+	if !exist {
+		logrus.Errorf("Namespace name not set in ENV key %s", common.NAMESPACE_ENV_KEY_NAME)
+	}
+	// save old patch
+	old_patch := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      common.PREVIOUS_CONFIG_MAP_NAME,
+			Namespace: ns,
+			Annotations: map[string]string{
+				common.KCO_LABLE_KEY_NAME: patchHash,
+			},
+		},
+		Data: map[string]string{
+			"config.yaml": string(buf),
+		},
+	}
+	_, err = client.CoreV1().ConfigMaps(ns).Create(context.Background(), old_patch, metav1.CreateOptions{})
+	if err != nil {
+		logrus.Errorf("could not create prev config: %s", err)
+	} else {
+		logrus.Infof("[CREATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+	}
+
 	// pre prep
 	patch := patchConfig.SpecPatch
 	var toIgnoreDeployments map[string]bool = make(map[string]bool)
@@ -60,13 +84,21 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 	if err != nil {
 		return err
 	}
+
+	// new patch = current patch - old patch + already present patch
 	for _, dep := range deps.Items {
 		_, okNS := includedNamespaces[dep.Namespace] // if NS exists
 		_, okIG := toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)]
 		_, okAN := dep.Annotations[common.KCO_LABLE_KEY_NAME]
 		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
 			// remove patch
+			tolsMap := make(map[string]bool)
+			for _, tol := range dep.Spec.Template.Spec.Tolerations {
+				tolsMap[fmt.Sprintf("%s-%s-%s-%s", tol.Key, tol.Operator, tol.Value, tol.Effect)] = true
+			}
+			res := []v1.Toleration{}
 
+			dep.Spec.Template.Spec.Tolerations = res
 			fmt.Println("remove patch")
 		}
 		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
@@ -124,7 +156,10 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 						Effect:   v1.TaintEffect(tolerance.Effect),
 					})
 				}
-				dep.Spec.Template.Spec.Tolerations = tolerations
+				if dep.Spec.Template.Spec.Tolerations == nil {
+					dep.Spec.Template.Spec.Tolerations = []v1.Toleration{}
+				}
+				dep.Spec.Template.Spec.Tolerations = append(dep.Spec.Template.Spec.Tolerations, tolerations...)
 				// Add preferred scheduling values if nil
 				if dep.Spec.Template.Spec.Affinity == nil || dep.Spec.Template.Spec.Affinity.NodeAffinity == nil || dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution == nil {
 					dep.Spec.Template.Spec.Affinity = &v1.Affinity{
@@ -192,7 +227,10 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 						Effect:   v1.TaintEffect(tolerance.Effect),
 					})
 				}
-				sset.Spec.Template.Spec.Tolerations = tolerations
+				if sset.Spec.Template.Spec.Tolerations == nil {
+					sset.Spec.Template.Spec.Tolerations = []v1.Toleration{}
+				}
+				sset.Spec.Template.Spec.Tolerations = append(sset.Spec.Template.Spec.Tolerations, tolerations...)
 				// Add preferred scheduling values if nil
 				if sset.Spec.Template.Spec.Affinity == nil || sset.Spec.Template.Spec.Affinity.NodeAffinity == nil || sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution == nil {
 					sset.Spec.Template.Spec.Affinity = &v1.Affinity{
