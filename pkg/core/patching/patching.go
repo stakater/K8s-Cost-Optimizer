@@ -54,9 +54,9 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      common.PREVIOUS_CONFIG_MAP_NAME,
 				Namespace: ns,
-				// Annotations: map[string]string{
-				// 	common.KCO_LABLE_KEY_NAME: patchHash,
-				// },
+				Annotations: map[string]string{
+					common.KCO_LABLE_KEY_NAME: patchHash,
+				},
 			},
 			Data: map[string]string{
 				"config.yaml": string(buf),
@@ -68,18 +68,22 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 		} else {
 			logrus.Infof("[CREATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
 		}
-	} else {
+	} else if patchHash == p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] { // skip
+		logrus.Infof("[SKIPPED] prev config map processing skipped, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+		p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] = patchHash
+	} else { // update
 		data, ok := p_cm.Data["config.yaml"]
 		if !ok {
 			return fmt.Errorf("previous patch data does not exist")
 		}
 		previous_config_data = data
 		p_cm.Data["config.yaml"] = string(buf)
+		p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] = patchHash
 		_, err = client.CoreV1().ConfigMaps(ns).Update(context.Background(), p_cm, metav1.UpdateOptions{})
 		if err != nil {
-			return fmt.Errorf("could not update prev config: %s", err)
+			return fmt.Errorf("could not update prev config data: %s", err)
 		} else {
-			logrus.Infof("[UPDATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+			logrus.Infof("[UPDATED] prev config cm data, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
 		}
 	}
 
@@ -97,60 +101,63 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 	patch := patchConfig.SpecPatch
 	var toIgnoreDeployments map[string]bool = make(map[string]bool)
 	var toIgnoreStatefulSets map[string]bool = make(map[string]bool)
-	var includedNamespaces map[string]bool = make(map[string]bool)
+	// var includedNamespaces map[string]bool = make(map[string]bool)
 	for _, dep := range patchConfig.ResourcesToIgnore.Deployments {
 		toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)] = true
 	}
 	for _, sset := range patchConfig.ResourcesToIgnore.StatefulSets {
 		toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)] = true
 	}
-	for _, namespace := range patchConfig.TargetNamespaces { // this will help in less iterations in next loop
-		includedNamespaces[namespace] = true
-	}
 
-	deps, err := client.AppsV1().Deployments("").List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
+	// TODO: Below code block commented out, re-evaluating
 
-	// new patch = current patch - old patch + already present patch
-	for _, dep := range deps.Items {
-		_, okNS := includedNamespaces[dep.Namespace] // if NS exists
-		_, okIG := toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)]
-		_, okAN := dep.Annotations[common.KCO_LABLE_KEY_NAME]
-		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
-			// remove patch
-			tolsMap := make(map[string]bool)
-			for _, tol := range dep.Spec.Template.Spec.Tolerations {
-				tolsMap[fmt.Sprintf("%s-%s-%s-%s", tol.Key, tol.Operator, tol.Value, tol.Effect)] = true
-			}
-			res := []v1.Toleration{}
+	// for _, namespace := range patchConfig.TargetNamespaces { // this will help in less iterations in next loop
+	// 	includedNamespaces[namespace] = true
+	// }
 
-			dep.Spec.Template.Spec.Tolerations = res
-			fmt.Println("remove patch")
-		}
-		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
-			// remove patch
-			fmt.Println("remove patch")
-		}
-	}
-	ssets, err := client.AppsV1().StatefulSets("").List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-	for _, sset := range ssets.Items {
-		_, okNS := includedNamespaces[sset.Namespace] // if NS exists
-		_, okIG := toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)]
-		_, okAN := sset.Annotations[common.KCO_LABLE_KEY_NAME]
-		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
-			// remove patch
-			fmt.Println("remove patch")
-		}
-		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
-			// remove patch
-			fmt.Println("remove patch")
-		}
-	}
+	// deps, err := client.AppsV1().Deployments("").List(context.Background(), metav1.ListOptions{})
+	// if err != nil {
+	// 	return err
+	// }
+
+	// // new patch = current patch - old patch + already present patch
+	// for _, dep := range deps.Items {
+	// 	_, okNS := includedNamespaces[dep.Namespace] // if NS exists
+	// 	_, okIG := toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)]
+	// 	_, okAN := dep.Annotations[common.KCO_LABLE_KEY_NAME]
+	// 	if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
+	// 		// remove patch
+	// 		tolsMap := make(map[string]bool)
+	// 		for _, tol := range dep.Spec.Template.Spec.Tolerations {
+	// 			tolsMap[fmt.Sprintf("%s-%s-%s-%s", tol.Key, tol.Operator, tol.Value, tol.Effect)] = true
+	// 		}
+	// 		res := []v1.Toleration{}
+
+	// 		dep.Spec.Template.Spec.Tolerations = res
+	// 		fmt.Println("remove patch")
+	// 	}
+	// 	if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
+	// 		// remove patch
+	// 		fmt.Println("remove patch")
+	// 	}
+	// }
+	// ssets, err := client.AppsV1().StatefulSets("").List(context.Background(), metav1.ListOptions{})
+	// if err != nil {
+	// 	return err
+	// }
+	// for _, sset := range ssets.Items {
+	// 	_, okNS := includedNamespaces[sset.Namespace] // if NS exists
+	// 	_, okIG := toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)]
+	// 	_, okAN := sset.Annotations[common.KCO_LABLE_KEY_NAME]
+	// 	if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
+	// 		// remove patch
+	// 		fmt.Println("remove patch")
+	// 	}
+	// 	if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
+	// 		// remove patch
+	// 		fmt.Println("remove patch")
+	// 	}
+	// }
 
 	// Check for patching
 
