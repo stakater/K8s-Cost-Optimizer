@@ -46,23 +46,51 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 		logrus.Errorf("Namespace name not set in ENV key %s", common.NAMESPACE_ENV_KEY_NAME)
 	}
 	// save old patch
-	old_patch := &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      common.PREVIOUS_CONFIG_MAP_NAME,
-			Namespace: ns,
-			Annotations: map[string]string{
-				common.KCO_LABLE_KEY_NAME: patchHash,
+	previous_config_data := ""
+	p_cm, err := client.CoreV1().ConfigMaps(ns).Get(context.Background(), common.PREVIOUS_CONFIG_MAP_NAME, metav1.GetOptions{})
+	if err != nil || p_cm.Name == "" { // create
+		logrus.Warnf("previous config map error: %s", err)
+		p_cm = &v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      common.PREVIOUS_CONFIG_MAP_NAME,
+				Namespace: ns,
+				// Annotations: map[string]string{
+				// 	common.KCO_LABLE_KEY_NAME: patchHash,
+				// },
 			},
-		},
-		Data: map[string]string{
-			"config.yaml": string(buf),
-		},
-	}
-	_, err = client.CoreV1().ConfigMaps(ns).Create(context.Background(), old_patch, metav1.CreateOptions{})
-	if err != nil {
-		logrus.Errorf("could not create prev config: %s", err)
+			Data: map[string]string{
+				"config.yaml": string(buf),
+			},
+		}
+		_, err = client.CoreV1().ConfigMaps(ns).Create(context.Background(), p_cm, metav1.CreateOptions{})
+		if err != nil {
+			return fmt.Errorf("could not create prev config: %s", err)
+		} else {
+			logrus.Infof("[CREATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+		}
 	} else {
-		logrus.Infof("[CREATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+		data, ok := p_cm.Data["config.yaml"]
+		if !ok {
+			return fmt.Errorf("previous patch data does not exist")
+		}
+		previous_config_data = data
+		p_cm.Data["config.yaml"] = string(buf)
+		_, err = client.CoreV1().ConfigMaps(ns).Update(context.Background(), p_cm, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("could not update prev config: %s", err)
+		} else {
+			logrus.Infof("[UPDATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+		}
+	}
+
+	if previous_config_data != "" { // remove previous patches - we have to remove previous patch in every case
+		logrus.Infof("removing previous patch")
+		previousPatchConfig := types.KCOConfig{}
+		err = yaml.UnmarshalStrict(buf, &previousPatchConfig)
+		if err != nil {
+			logrus.Errorf("Couldn't parse previous config, error: %v", err)
+			return err
+		}
 	}
 
 	// pre prep
