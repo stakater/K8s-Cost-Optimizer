@@ -41,67 +41,70 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 		logrus.Errorf("Couldn't generate hash for config, error: %v", err)
 		return err
 	}
-	ns, exist := os.LookupEnv(common.NAMESPACE_ENV_KEY_NAME)
-	if !exist {
-		logrus.Errorf("Namespace name not set in ENV key %s", common.NAMESPACE_ENV_KEY_NAME)
-	}
-	// save old patch
-	previous_config_data := ""
-	p_cm, err := client.CoreV1().ConfigMaps(ns).Get(context.Background(), common.PREVIOUS_CONFIG_MAP_NAME, metav1.GetOptions{})
-	if err != nil || p_cm.Name == "" { // create
-		logrus.Warnf("previous config map error: %s", err)
-		p_cm = &v1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      common.PREVIOUS_CONFIG_MAP_NAME,
-				Namespace: ns,
-				Annotations: map[string]string{
-					common.KCO_LABLE_KEY_NAME: patchHash,
-				},
-			},
-			Data: map[string]string{
-				"config.yaml": string(buf),
-			},
-		}
-		_, err = client.CoreV1().ConfigMaps(ns).Create(context.Background(), p_cm, metav1.CreateOptions{})
-		if err != nil {
-			return fmt.Errorf("could not create prev config: %s", err)
-		} else {
-			logrus.Infof("[CREATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
-		}
-	} else if patchHash == p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] { // skip
-		logrus.Infof("[SKIPPED] prev config map processing skipped, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
-		p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] = patchHash
-	} else { // update
-		data, ok := p_cm.Data["config.yaml"]
-		if !ok {
-			return fmt.Errorf("previous patch data does not exist")
-		}
-		previous_config_data = data
-		p_cm.Data["config.yaml"] = string(buf)
-		p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] = patchHash
-		_, err = client.CoreV1().ConfigMaps(ns).Update(context.Background(), p_cm, metav1.UpdateOptions{})
-		if err != nil {
-			return fmt.Errorf("could not update prev config data: %s", err)
-		} else {
-			logrus.Infof("[UPDATED] prev config cm data, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
-		}
-	}
 
-	if previous_config_data != "" { // remove previous patches - we have to remove previous patch in every case
-		logrus.Infof("removing previous patch")
-		previousPatchConfig := types.KCOConfig{}
-		err = yaml.UnmarshalStrict(buf, &previousPatchConfig)
-		if err != nil {
-			logrus.Errorf("Couldn't parse previous config, error: %v", err)
-			return err
-		}
-	}
+	// LEAVING this for next iteration -- removing old patch and setting new one -- for now, patch always remain the same, only target deployments and statefulsets are bound to change
+
+	// ns, exist := os.LookupEnv(common.NAMESPACE_ENV_KEY_NAME)
+	// if !exist {
+	// 	logrus.Errorf("Namespace name not set in ENV key %s", common.NAMESPACE_ENV_KEY_NAME)
+	// }
+	// save old patch
+	// previous_config_data := ""
+	// p_cm, err := client.CoreV1().ConfigMaps(ns).Get(context.Background(), common.PREVIOUS_CONFIG_MAP_NAME, metav1.GetOptions{})
+	// if err != nil || p_cm.Name == "" { // create
+	// 	logrus.Warnf("previous config map error: %s", err)
+	// 	p_cm = &v1.ConfigMap{
+	// 		ObjectMeta: metav1.ObjectMeta{
+	// 			Name:      common.PREVIOUS_CONFIG_MAP_NAME,
+	// 			Namespace: ns,
+	// 			Annotations: map[string]string{
+	// 				common.KCO_LABLE_KEY_NAME: patchHash,
+	// 			},
+	// 		},
+	// 		Data: map[string]string{
+	// 			"config.yaml": string(buf),
+	// 		},
+	// 	}
+	// 	_, err = client.CoreV1().ConfigMaps(ns).Create(context.Background(), p_cm, metav1.CreateOptions{})
+	// 	if err != nil {
+	// 		return fmt.Errorf("could not create prev config: %s", err)
+	// 	} else {
+	// 		logrus.Infof("[CREATED] prev config cm, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+	// 	}
+	// } else if patchHash == p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] { // skip
+	// 	logrus.Infof("[SKIPPED] prev config map processing skipped, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+	// 	p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] = patchHash
+	// } else { // update
+	// 	data, ok := p_cm.Data["config.yaml"]
+	// 	if !ok {
+	// 		return fmt.Errorf("previous patch data does not exist")
+	// 	}
+	// 	previous_config_data = data
+	// 	p_cm.Data["config.yaml"] = string(buf)
+	// 	p_cm.ObjectMeta.Annotations[common.KCO_LABLE_KEY_NAME] = patchHash
+	// 	_, err = client.CoreV1().ConfigMaps(ns).Update(context.Background(), p_cm, metav1.UpdateOptions{})
+	// 	if err != nil {
+	// 		return fmt.Errorf("could not update prev config data: %s", err)
+	// 	} else {
+	// 		logrus.Infof("[UPDATED] prev config cm data, %s/%s", common.PREVIOUS_CONFIG_MAP_NAME, ns)
+	// 	}
+	// }
+
+	// if previous_config_data != "" { // remove previous patches - we have to remove previous patch in every case
+	// 	logrus.Infof("removing previous patch")
+	// 	previousPatchConfig := types.KCOConfig{}
+	// 	err = yaml.UnmarshalStrict(buf, &previousPatchConfig)
+	// 	if err != nil {
+	// 		logrus.Errorf("Couldn't parse previous config, error: %v", err)
+	// 		return err
+	// 	}
+	// }
 
 	// pre prep
 	patch := patchConfig.SpecPatch
 	var toIgnoreDeployments map[string]bool = make(map[string]bool)
 	var toIgnoreStatefulSets map[string]bool = make(map[string]bool)
-	// var includedNamespaces map[string]bool = make(map[string]bool)
+	var includedNamespaces map[string]bool = make(map[string]bool)
 	for _, dep := range patchConfig.ResourcesToIgnore.Deployments {
 		toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)] = true
 	}
@@ -111,53 +114,52 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 
 	// TODO: Below code block commented out, re-evaluating
 
-	// for _, namespace := range patchConfig.TargetNamespaces { // this will help in less iterations in next loop
-	// 	includedNamespaces[namespace] = true
-	// }
+	for _, namespace := range patchConfig.TargetNamespaces { // this will help in less iterations in next loop
+		includedNamespaces[namespace] = true
+	}
 
-	// deps, err := client.AppsV1().Deployments("").List(context.Background(), metav1.ListOptions{})
-	// if err != nil {
-	// 	return err
-	// }
+	deps, err := client.AppsV1().Deployments("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
 
-	// // new patch = current patch - old patch + already present patch
-	// for _, dep := range deps.Items {
-	// 	_, okNS := includedNamespaces[dep.Namespace] // if NS exists
-	// 	_, okIG := toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)]
-	// 	_, okAN := dep.Annotations[common.KCO_LABLE_KEY_NAME]
-	// 	if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
-	// 		// remove patch
-	// 		tolsMap := make(map[string]bool)
-	// 		for _, tol := range dep.Spec.Template.Spec.Tolerations {
-	// 			tolsMap[fmt.Sprintf("%s-%s-%s-%s", tol.Key, tol.Operator, tol.Value, tol.Effect)] = true
-	// 		}
-	// 		res := []v1.Toleration{}
+	for _, dep := range deps.Items {
+		_, okNS := includedNamespaces[dep.Namespace] // if NS exists
+		_, okIG := toIgnoreDeployments[fmt.Sprintf("%s-%s", dep.Namespace, dep.Name)]
+		_, okAN := dep.Annotations[common.KCO_LABLE_KEY_NAME]
+		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
+			// remove patch
+			tolsMap := make(map[string]bool)
+			for _, tol := range dep.Spec.Template.Spec.Tolerations {
+				tolsMap[fmt.Sprintf("%s-%s-%s-%s", tol.Key, tol.Operator, tol.Value, tol.Effect)] = true
+			}
+			res := []v1.Toleration{}
 
-	// 		dep.Spec.Template.Spec.Tolerations = res
-	// 		fmt.Println("remove patch")
-	// 	}
-	// 	if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
-	// 		// remove patch
-	// 		fmt.Println("remove patch")
-	// 	}
-	// }
-	// ssets, err := client.AppsV1().StatefulSets("").List(context.Background(), metav1.ListOptions{})
-	// if err != nil {
-	// 	return err
-	// }
-	// for _, sset := range ssets.Items {
-	// 	_, okNS := includedNamespaces[sset.Namespace] // if NS exists
-	// 	_, okIG := toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)]
-	// 	_, okAN := sset.Annotations[common.KCO_LABLE_KEY_NAME]
-	// 	if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
-	// 		// remove patch
-	// 		fmt.Println("remove patch")
-	// 	}
-	// 	if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
-	// 		// remove patch
-	// 		fmt.Println("remove patch")
-	// 	}
-	// }
+			dep.Spec.Template.Spec.Tolerations = res
+			fmt.Println("remove patch")
+		}
+		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
+			// remove patch
+			fmt.Println("remove patch")
+		}
+	}
+	ssets, err := client.AppsV1().StatefulSets("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, sset := range ssets.Items {
+		_, okNS := includedNamespaces[sset.Namespace] // if NS exists
+		_, okIG := toIgnoreStatefulSets[fmt.Sprintf("%s-%s", sset.Namespace, sset.Name)]
+		_, okAN := sset.Annotations[common.KCO_LABLE_KEY_NAME]
+		if !okNS && okAN { // If Namespace doesn't exist and annotation exists - remove patch
+			// remove patch
+			fmt.Println("remove patch")
+		}
+		if okNS && okIG && okAN { // If Namespace exists and Dep is in ignore and annotation exists - remove patch
+			// remove patch
+			fmt.Println("remove patch")
+		}
+	}
 
 	// Check for patching
 
