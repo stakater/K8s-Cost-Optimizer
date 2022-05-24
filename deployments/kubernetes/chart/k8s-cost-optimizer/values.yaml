@@ -78,10 +78,10 @@ k8scostoptimizer:
     labels:
       provider: stakater
       group: com.stakater.platform
-      version: v0.0.1-951fb2f
+      version: v0.0.1
     image:
       name: stakater/k8s-cost-optimizer
-      tag: v0.0.1-951fb2f
+      tag: v0.0.1
       pullPolicy: IfNotPresent
 
     # Specify resource requests/limits for the CronJob.
