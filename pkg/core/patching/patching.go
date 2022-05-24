@@ -32,7 +32,7 @@ func PatchResources(client *clientset.Clientset, configFilePath string, dryRun b
 		logrus.Errorf("Couldn't parse config, error: %v", err)
 		return err
 	}
-	patchHash, err := utils.AsSha256(patchConfig)
+	patchHash, err := utils.AsSha256(patchConfig.SpecPatch)
 	if err != nil {
 		logrus.Errorf("Couldn't generate hash for config, error: %v", err)
 		return err
