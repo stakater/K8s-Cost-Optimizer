@@ -123,3 +123,29 @@ specPatch:
             values:
             - spot
 ```
+
+## Note
+
+For now, we need to keep the config spec patch static
+```
+...
+specPatch:
+  tolerations:
+  - effect: NoSchedule
+    key: kubernetes.azure.com/scalesetpriority
+    operator: Equal
+    value: spot
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: agentpool
+            operator: In
+            values:
+            - spot
+...
+```
+Reason for this is to remove the patch when and where needed.
+This is for the special use-case for our internal operations.

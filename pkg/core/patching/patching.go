@@ -41,6 +41,18 @@ func RemovePatch(client *clientset.Clientset, patchConfig types.KCOConfig, dryRu
 			}
 		}
 		dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[:toRemoveIndex], dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[toRemoveIndex+1:]...)
+
+		toMatchTol := patch.Tolerations[0]
+		for i, v := range dep.Spec.Template.Spec.Tolerations {
+			if toMatchTol.Key == v.Key &&
+				toMatchTol.Operator == string(v.Operator) &&
+				toMatchTol.Value == v.Value &&
+				toMatchTol.Effect == string(v.Effect) {
+				toRemoveIndex = i
+			}
+		}
+		dep.Spec.Template.Spec.Tolerations = append(dep.Spec.Template.Spec.Tolerations[:toRemoveIndex], dep.Spec.Template.Spec.Tolerations[toRemoveIndex+1:]...)
+
 		if !dryRun {
 			_, err := client.AppsV1().Deployments(dep.Namespace).Update(context.Background(), &dep, metav1.UpdateOptions{})
 			if err != nil {
@@ -67,6 +79,18 @@ func RemovePatch(client *clientset.Clientset, patchConfig types.KCOConfig, dryRu
 			}
 		}
 		sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[:toRemoveIndex], sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[toRemoveIndex+1:]...)
+
+		toMatchTol := patch.Tolerations[0]
+		for i, v := range sset.Spec.Template.Spec.Tolerations {
+			if toMatchTol.Key == v.Key &&
+				toMatchTol.Operator == string(v.Operator) &&
+				toMatchTol.Value == v.Value &&
+				toMatchTol.Effect == string(v.Effect) {
+				toRemoveIndex = i
+			}
+		}
+		sset.Spec.Template.Spec.Tolerations = append(sset.Spec.Template.Spec.Tolerations[:toRemoveIndex], sset.Spec.Template.Spec.Tolerations[toRemoveIndex+1:]...)
+
 		if !dryRun {
 			_, err := client.AppsV1().StatefulSets(sset.Namespace).Update(context.Background(), &sset, metav1.UpdateOptions{})
 			if err != nil {
