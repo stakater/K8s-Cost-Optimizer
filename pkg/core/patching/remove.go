@@ -27,29 +27,36 @@ func RemovePatch(client *clientset.Clientset, patchConfig types.KCOConfig, dryRu
 		delete(dep.ObjectMeta.Annotations, common.KCO_LABLE_KEY_NAME)
 		// only 1 item as per bounds
 		toMatch := patch.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0]
-		toRemoveIndex := -1
+		toRemoveIndexAff := -1
 		for i, v := range dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution {
 			if v.Weight == toMatch.Weight &&
 				v.Preference.MatchExpressions[0].Key == toMatch.Preference.MatchExpressions[0].Key &&
 				v.Preference.MatchExpressions[0].Operator == v1.NodeSelectorOperator(toMatch.Preference.MatchExpressions[0].Operator) &&
 				v.Preference.MatchExpressions[0].Values[0] == toMatch.Preference.MatchExpressions[0].Values[0] {
-				toRemoveIndex = i
+				toRemoveIndexAff = i
 			}
 		}
-		dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[:toRemoveIndex], dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[toRemoveIndex+1:]...)
+		if toRemoveIndexAff != -1 {
+			dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[:toRemoveIndexAff], dep.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[toRemoveIndexAff+1:]...)
+		}
 
+		toRemoveIndexTol := -1
 		toMatchTol := patch.Tolerations[0]
 		for i, v := range dep.Spec.Template.Spec.Tolerations {
 			if toMatchTol.Key == v.Key &&
 				toMatchTol.Operator == string(v.Operator) &&
 				toMatchTol.Value == v.Value &&
 				toMatchTol.Effect == string(v.Effect) {
-				toRemoveIndex = i
+				toRemoveIndexTol = i
 			}
 		}
-		dep.Spec.Template.Spec.Tolerations = append(dep.Spec.Template.Spec.Tolerations[:toRemoveIndex], dep.Spec.Template.Spec.Tolerations[toRemoveIndex+1:]...)
+		if toRemoveIndexTol != -1 {
+			dep.Spec.Template.Spec.Tolerations = append(dep.Spec.Template.Spec.Tolerations[:toRemoveIndexTol], dep.Spec.Template.Spec.Tolerations[toRemoveIndexTol+1:]...)
+		}
 
-		if !dryRun {
+		if toRemoveIndexAff == -1 || toRemoveIndexTol == -1 {
+			logrus.Errorf("[SKIPPED PATCH-REMOVED] deployment %s/%s : %s", dep.Namespace, dep.Name, err)
+		} else if !dryRun {
 			_, err := client.AppsV1().Deployments(dep.Namespace).Update(context.Background(), &dep, metav1.UpdateOptions{})
 			if err != nil {
 				logrus.Errorf("[FAILED PATCH-REMOVED] deployment %s/%s : %s", dep.Namespace, dep.Name, err)
@@ -65,29 +72,35 @@ func RemovePatch(client *clientset.Clientset, patchConfig types.KCOConfig, dryRu
 		delete(sset.ObjectMeta.Annotations, common.KCO_LABLE_KEY_NAME)
 		// only 1 item as per bounds
 		toMatch := patch.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0]
-		toRemoveIndex := -1
+		toRemoveIndexAff := -1
 		for i, v := range sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution {
 			if v.Weight == toMatch.Weight &&
 				v.Preference.MatchExpressions[0].Key == toMatch.Preference.MatchExpressions[0].Key &&
 				v.Preference.MatchExpressions[0].Operator == v1.NodeSelectorOperator(toMatch.Preference.MatchExpressions[0].Operator) &&
 				v.Preference.MatchExpressions[0].Values[0] == toMatch.Preference.MatchExpressions[0].Values[0] {
-				toRemoveIndex = i
+				toRemoveIndexAff = i
 			}
 		}
-		sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[:toRemoveIndex], sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[toRemoveIndex+1:]...)
+		if toRemoveIndexAff != -1 {
+			sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[:toRemoveIndexAff], sset.Spec.Template.Spec.Affinity.NodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution[toRemoveIndexAff+1:]...)
+		}
 
+		toRemoveIndexTol := -1
 		toMatchTol := patch.Tolerations[0]
 		for i, v := range sset.Spec.Template.Spec.Tolerations {
 			if toMatchTol.Key == v.Key &&
 				toMatchTol.Operator == string(v.Operator) &&
 				toMatchTol.Value == v.Value &&
 				toMatchTol.Effect == string(v.Effect) {
-				toRemoveIndex = i
+				toRemoveIndexTol = i
 			}
 		}
-		sset.Spec.Template.Spec.Tolerations = append(sset.Spec.Template.Spec.Tolerations[:toRemoveIndex], sset.Spec.Template.Spec.Tolerations[toRemoveIndex+1:]...)
-
-		if !dryRun {
+		if toRemoveIndexTol != -1 {
+			sset.Spec.Template.Spec.Tolerations = append(sset.Spec.Template.Spec.Tolerations[:toRemoveIndexTol], sset.Spec.Template.Spec.Tolerations[toRemoveIndexTol+1:]...)
+		}
+		if toRemoveIndexAff == -1 || toRemoveIndexTol == -1 {
+			logrus.Errorf("[SKIPPED PATCH-REMOVED] statefulset %s/%s : %s", sset.Namespace, sset.Name, err)
+		} else if !dryRun {
 			_, err := client.AppsV1().StatefulSets(sset.Namespace).Update(context.Background(), &sset, metav1.UpdateOptions{})
 			if err != nil {
 				logrus.Errorf("[FAILED PATCH-REMOVED] statefulset %s/%s : %s", sset.Namespace, sset.Name, err)
